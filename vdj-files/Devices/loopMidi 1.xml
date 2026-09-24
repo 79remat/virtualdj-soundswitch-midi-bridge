@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<device name="VirtualDJ_to_SoundSwitch" author="locoDog" version="802" description="VirtualDJ_to_SoundSwitch" type="MIDI" decks="2" drivername="VirtualDJ_to_SoundSwitch" output="yes">
+
+  <!-- Buttons (pads) -->
+  <button note="0x00" name="PAD1" channel="00"/>
+  <button note="0x01" name="PAD2" channel="00"/>
+  <button note="0x02" name="PAD3" channel="00"/>
+  <button note="0x03" name="PAD4" channel="00"/>
+  <button note="0x04" name="PAD5" channel="00"/>
+  <button note="0x05" name="PAD6" channel="00"/>
+  <button note="0x06" name="PAD7" channel="00"/>
+  <button note="0x07" name="PAD8" channel="00"/>
+
+  <!-- LED feedback -->
+  <!-- DMX - Static Scenes: notes 0x00-0x07 -->
+  <led note="0x00" name="LED_VAR01001" channel="00"/>
+  <led note="0x01" name="LED_VAR01002" channel="00"/>
+  <led note="0x02" name="LED_VAR01003" channel="00"/>
+  <led note="0x03" name="LED_VAR01004" channel="00"/>
+  <led note="0x04" name="LED_VAR01005" channel="00"/>
+  <led note="0x05" name="LED_VAR01006" channel="00"/>
+  <led note="0x06" name="LED_VAR01007" channel="00"/>
+  <led note="0x07" name="LED_VAR01008" channel="00"/>
+  <!-- DMX - Autoloops: notes 0x08-0x0F -->
+  <led note="0x08" name="LED_VAR01009" channel="00"/>
+  <led note="0x09" name="LED_VAR01010" channel="00"/>
+  <led note="0x0A" name="LED_VAR01011" channel="00"/>
+  <led note="0x0B" name="LED_VAR01012" channel="00"/>
+  <led note="0x0C" name="LED_VAR01013" channel="00"/>
+  <led note="0x0D" name="LED_VAR01014" channel="00"/>
+  <led note="0x0E" name="LED_VAR01015" channel="00"/>
+  <led note="0x0F" name="LED_VAR01016" channel="00"/>
+</device>

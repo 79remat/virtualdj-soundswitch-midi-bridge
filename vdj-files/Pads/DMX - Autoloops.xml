@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page name="DMX - Autoloops">
+	<pad1 name="autoloop 1" color="color &apos;red&apos;">set &apos;$midiVariable&apos; 01009 &amp; wait 250ms &amp; set &apos;$midiVariable&apos; 0</pad1>
+	<pad2 name="autoloop 2" color="color &apos;blue&apos;">set &apos;$midiVariable&apos; 01010 &amp; wait 250ms &amp; set &apos;$midiVariable&apos; 0</pad2>
+	<pad3 name="autoloop 3" color="color &apos;green&apos;">set &apos;$midiVariable&apos; 01011 &amp; wait 250ms &amp; set &apos;$midiVariable&apos; 0</pad3>
+	<pad4 name="autoloop 4" color="color &apos;white&apos;">set &apos;$midiVariable&apos; 01012 &amp; wait 250ms &amp; set &apos;$midiVariable&apos; 0</pad4>
+	<pad5 name="autoloop 5" color="color &apos;cyan&apos;">set &apos;$midiVariable&apos; 01013 &amp; wait 250ms &amp; set &apos;$midiVariable&apos; 0</pad5>
+	<pad6 name="autoloop 6" color="color &apos;magenta&apos;">set &apos;$midiVariable&apos; 01014 &amp; wait 250ms &amp; set &apos;$midiVariable&apos; 0</pad6>
+	<pad7 name="autoloop 7" color="color &apos;yellow&apos;">set &apos;$midiVariable&apos; 01015 &amp; wait 250ms &amp; set &apos;$midiVariable&apos; 0</pad7>
+	<pad8 name="autoloop 8" color="color &apos;orange&apos;">set &apos;$midiVariable&apos; 01016 &amp; wait 250ms &amp; set &apos;$midiVariable&apos; 0</pad8>
+	<menu>DMX Scenes =[os2l_info]</menu>
+</page>

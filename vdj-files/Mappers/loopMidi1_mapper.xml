@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper device="VirtualDJ_to_SoundSwitch" version="850" date="2025-11-12">
+	<!-- Swallow loopback: notes we send return on this port's input. -->
+	<map value="PAD1" action="nothing" />
+	<map value="PAD2" action="nothing" />
+	<map value="PAD3" action="nothing" />
+	<map value="PAD4" action="nothing" />
+	<map value="PAD5" action="nothing" />
+	<map value="PAD6" action="nothing" />
+	<map value="PAD7" action="nothing" />
+	<map value="PAD8" action="nothing" />
+	<map value="LED_VAR01001" action="var &apos;$midiVariable&apos; 01001" />
+	<map value="LED_VAR01002" action="var &apos;$midiVariable&apos; 01002" />
+	<map value="LED_VAR01003" action="var &apos;$midiVariable&apos; 01003" />
+	<map value="LED_VAR01004" action="var &apos;$midiVariable&apos; 01004" />
+	<map value="LED_VAR01005" action="var &apos;$midiVariable&apos; 01005" />
+	<map value="LED_VAR01006" action="var &apos;$midiVariable&apos; 01006" />
+	<map value="LED_VAR01007" action="var &apos;$midiVariable&apos; 01007" />
+	<map value="LED_VAR01008" action="var &apos;$midiVariable&apos; 01008" />
+	<map value="LED_VAR01009" action="var &apos;$midiVariable&apos; 01009" />
+	<map value="LED_VAR01010" action="var &apos;$midiVariable&apos; 01010" />
+	<map value="LED_VAR01011" action="var &apos;$midiVariable&apos; 01011" />
+	<map value="LED_VAR01012" action="var &apos;$midiVariable&apos; 01012" />
+	<map value="LED_VAR01013" action="var &apos;$midiVariable&apos; 01013" />
+	<map value="LED_VAR01014" action="var &apos;$midiVariable&apos; 01014" />
+	<map value="LED_VAR01015" action="var &apos;$midiVariable&apos; 01015" />
+	<map value="LED_VAR01016" action="var &apos;$midiVariable&apos; 01016" />
+</mapper>
