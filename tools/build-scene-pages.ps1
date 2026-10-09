@@ -56,11 +56,15 @@ $pages = @(
       @{n=8; name="Blackout"; color="red"}
     )
     codeOffset = 0   # pad1 -> code 01001
+    exclusive = $true   # one look at a time
+    newFirst = $true    # confirmed correct for this page -- do not change lightly
+    clearOld = $true
+    settleDelayMs = 0
   },
   @{
     file = "DMX - Performance Mode.xml"
     name = "DMX - Performance Mode"
-    varSuffix = "Perf"   # uses $activeScenePerf / $sceneLockPerf
+    varSuffix = "Perf"   # uses $activeScenePerf / $sceneLockPerf (unused when exclusive=$false)
     pads = @(
       @{n=1; name="scene 9";  color="red"},
       @{n=2; name="scene 10"; color="blue"},
@@ -72,24 +76,64 @@ $pages = @(
       @{n=8; name="scene 16"; color="orange"}
     )
     codeOffset = 8   # pad1 -> code 01009
+    exclusive = $true   # one look at a time, same as page 1
+    newFirst = $true
+    clearOld = $false   # CONFIRMED (tested 0ms/150ms/600ms settle delays):
+                         # any pulse sent to the old scene's note, even meant
+                         # as "clear", makes SoundSwitch visually show that
+                         # scene again -- its fixture priority is purely
+                         # "most recently touched note", independent of
+                         # on/off state. No delay fixes this; not sending the
+                         # clear pulse at all is the only way to avoid it.
+                         # Stale Active Looks list entries are the accepted
+                         # cost. See the manual "Clear All" pad if/when added.
+    settleDelayMs = 0
   }
 )
 
 function Pulse($varName, $padNum, $codeOffset) {
-  $code = "0100{0}" -f ($padNum + $codeOffset)
+  $code = "{0:D5}" -f (1000 + $padNum + $codeOffset)
   return "set '`$midiVariable' $code & wait 250ms & set '`$midiVariable' 0"
 }
 
-function BuildAction($pads, $x, $activeVar, $lockVar, $codeOffset) {
+function BuildAction($pads, $x, $activeVar, $lockVar, $codeOffset, $newFirst = $true, $clearOld = $true, $settleDelayMs = 0) {
   $others = $pads.n | Where-Object { $_ -ne $x }
   $lockOn = "set '`$$lockVar' 1 & "
   $lockOff = " & set '`$$lockVar' 0"
 
   $expr = "var '`$$activeVar' $x ? $lockOn set '`$$activeVar' 0 & $(Pulse $activeVar $x $codeOffset)$lockOff : "
 
+  if (-not $clearOld) {
+    # Don't explicitly clear whatever was active -- SoundSwitch gives fixture
+    # priority to the most-recently-triggered look, so a single activate pulse
+    # already wins visually with no gap. Trade-off: SoundSwitch's own Active
+    # Looks list may still show the old one as nominally active in the
+    # background (not re-triggered means not toggled off there).
+    return "var '`$$lockVar' 1 ? nothing : $expr$lockOn $(Pulse $activeVar $x $codeOffset) & set '`$$activeVar' $x$lockOff"
+  }
+
   $chain = ""
   foreach ($o in $others) {
-    $chain += "var '`$$activeVar' $o ? $lockOn $(Pulse $activeVar $x $codeOffset) & set '`$$activeVar' $x & $(Pulse $activeVar $o $codeOffset)$lockOff : "
+    if ($newFirst -and $settleDelayMs -gt 0) {
+      # Same as new-first, but with a real pause before the clear pulse so the
+      # new look's state has time to lock in before anything else touches that
+      # fixture. Without this, SoundSwitch's fixture-priority logic can
+      # transiently reassert the old look when its clear pulse fires right
+      # after the new one, instead of leaving the new one showing.
+      $chain += "var '`$$activeVar' $o ? $lockOn $(Pulse $activeVar $x $codeOffset) & set '`$$activeVar' $x & wait ${settleDelayMs}ms & $(Pulse $activeVar $o $codeOffset)$lockOff : "
+    } elseif ($newFirst) {
+      # new-before-old: avoids a visible gap where lighting falls back to the
+      # running autoloop between scenes. Confirmed correct for page 1.
+      $chain += "var '`$$activeVar' $o ? $lockOn $(Pulse $activeVar $x $codeOffset) & set '`$$activeVar' $x & $(Pulse $activeVar $o $codeOffset)$lockOff : "
+    } else {
+      # old-before-new: SoundSwitch 2.11 gives fixture-conflict priority to
+      # whichever look was MOST RECENTLY triggered. If re-sending a note
+      # doesn't actually toggle a look off (just re-triggers/re-prioritizes
+      # it), new-first makes the OLD look win priority since it was sent
+      # last. Sending old first, new last, fixes that -- at the cost of
+      # reintroducing the brief gap new-first was built to avoid.
+      $chain += "var '`$$activeVar' $o ? $lockOn $(Pulse $activeVar $o $codeOffset) & set '`$$activeVar' $x & $(Pulse $activeVar $x $codeOffset)$lockOff : "
+    }
   }
 
   $chain += "$lockOn $(Pulse $activeVar $x $codeOffset) & set '`$$activeVar' $x$lockOff"
@@ -107,9 +151,19 @@ foreach ($page in $pages) {
   [void]$sb.AppendLine('<?xml version="1.0" encoding="UTF-8"?>')
   [void]$sb.AppendLine("<page name=`"$($page.name)`">")
   foreach ($p in $page.pads) {
-    $action = BuildAction $page.pads $p.n $activeVar $lockVar $page.codeOffset
+    if ($page.exclusive) {
+      $action = BuildAction $page.pads $p.n $activeVar $lockVar $page.codeOffset $page.newFirst $page.clearOld $page.settleDelayMs
+      $colorExpr = "var '`$$activeVar' $($p.n) ? color '$($p.color)' : color 50% '$($p.color)'"
+    } else {
+      # non-exclusive: pads can stack freely, but each still tracks its OWN on/off
+      # state independently (no shared variable, so dimming one pad never affects
+      # another) -- toggles dim/lit on every press, pulse fires either way since
+      # SoundSwitch's own MIDI-learned button is what actually toggles the look.
+      $toggleVar = "scene{0:D5}" -f (1000 + $p.n + $page.codeOffset)
+      $action = "var '`$$toggleVar' 1 ? set '`$$toggleVar' 0 & $(Pulse $activeVar $p.n $page.codeOffset) : set '`$$toggleVar' 1 & $(Pulse $activeVar $p.n $page.codeOffset)"
+      $colorExpr = "var '`$$toggleVar' 1 ? color '$($p.color)' : color 50% '$($p.color)'"
+    }
     $actionEsc = [System.Security.SecurityElement]::Escape($action)
-    $colorExpr = "var '`$$activeVar' $($p.n) ? color '$($p.color)' : color 50% '$($p.color)'"
     $colorEsc = [System.Security.SecurityElement]::Escape($colorExpr)
     $nameAttr = if ($p.name) { " name=`"$($p.name)`"" } else { "" }
     [void]$sb.AppendLine("`t<pad$($p.n)$nameAttr color=`"$colorEsc`" autodim=`"false`">$actionEsc</pad$($p.n)>")
